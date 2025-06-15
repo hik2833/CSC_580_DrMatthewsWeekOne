@@ -1,0 +1,81 @@
+import PIL.Image
+import PIL.ImageDraw
+import face_recognition
+import numpy as np
+
+def detect_faces_in_image(image_path):
+    """
+    Detect faces in an image and draw red rectangles around them.
+    
+    Args:
+        image_path (str): Path to the image file
+    """
+    try:
+        # Load the jpg file into a numpy array
+        image = face_recognition.load_image_file(image_path)
+        
+        # Find all the faces in the image using the default HOG-based model
+        # Note: you can also use a more accurate deep-learning-based model
+        # by adding model="cnn" parameter, but it's slower
+        face_locations = face_recognition.face_locations(image)
+        
+        # Count the number of faces found
+        number_of_faces = len(face_locations)
+        print("Found {} face(s) in this picture.".format(number_of_faces))
+        
+        if number_of_faces == 0:
+            print("No faces detected in the image.")
+            return
+        
+        # Load the image into a Python Image Library object so that you can draw on top of it
+        pil_image = PIL.Image.fromarray(image)
+        
+        # Create a drawing context
+        draw_handle = PIL.ImageDraw.Draw(pil_image)
+        
+        # Loop through each face found in the image
+        for face_location in face_locations:
+            # The face_recognition library returns coordinates in (top, right, bottom, left) order
+            top, right, bottom, left = face_location
+            
+            # Print the location of each face in this image
+            print("A face is located at pixel location Top: {}, Left: {}, Bottom: {}, Right: {}".format(
+                top, left, bottom, right))
+            
+            # Draw a red rectangle around the face
+            # PIL.ImageDraw.rectangle expects coordinates in [left, top, right, bottom] format
+            draw_handle.rectangle([left, top, right, bottom], outline="red", width=3)
+        
+        # Display the image on screen
+        pil_image.show()
+        
+        # Optionally save the image with detected faces
+        output_filename = "faces_detected_" + image_path.split('/')[-1]
+        pil_image.save(output_filename)
+        print(f"Image with detected faces saved as: {output_filename}")
+        
+    except FileNotFoundError:
+        print(f"Error: Could not find image file '{image_path}'")
+        print("Please make sure the file exists and the path is correct.")
+    except Exception as e:
+        print(f"An error occurred: {str(e)}")
+
+def main():
+    """
+    Main function to run the face detection program.
+    """
+    # Replace 'your_image.jpg' with the path to your image file
+    # Make sure your image contains human faces for testing
+    image_path = "group_photo.jpg"  # Change this to your image file name
+    
+    print("Starting face detection...")
+    print(f"Processing image: {image_path}")
+    print("-" * 50)
+    
+    detect_faces_in_image(image_path)
+    
+    print("-" * 50)
+    print("Face detection completed!")
+
+if __name__ == "__main__":
+    main()
